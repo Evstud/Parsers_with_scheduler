@@ -1,0 +1,29 @@
+version: '3'
+services:
+        kommersant:
+                build:
+                        context: .
+                        dockerfile: ./docker/Dockerfile
+                ports:
+                        - 9002:8001
+                depends_on:
+                        - postgres_kommersant
+                volumes:
+                        - ./1_kommersant_files/final_jsons:/code/app/final_jsons
+                        - ./1_kommersant_files/links/base_htmls:/code/app/links/base_htmls
+                        - ./1_kommersant_files/links/links_files:/code/app/links/links_files
+                restart: always
+        postgres_kommersant:
+                image: postgres
+                environment:
+                        POSTGRES_USER: postgres
+                        POSTGRES_PASSWORD: password
+                        POSTGRES_DB: db_previous_kommersant
+                ports:
+                        - 15432:5432
+                volumes:
+                        - ./1_postgres-db_previous_kommersant:/var/lib/postgresql/data
+                restart: always
+volumes:
+        1_postgres-db_previous_kommersant:
+        1_kommersant_files:

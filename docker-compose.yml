@@ -1,0 +1,58 @@
+version: '3'
+services:
+
+        kommersant:
+                build:
+                        context: .
+                        dockerfile: ./1_kommersant/docker/Dockerfile
+                ports:
+                        - 9002:8001
+                depends_on:
+                        - postgres_kommersant
+                volumes:
+                        - ./all_volumes/1_kommersant_files/final_jsons:/code/app/final_jsons
+                        - ./all_volumes/1_kommersant_files/links/base_htmls:/code/app/links/base_htmls
+                        - ./all_volumes/1_kommersant_files/links/links_files:/code/app/links/links_files
+                restart: always
+
+        scheduler:
+                build:
+                        context: .
+                        dockerfile: ./0_scheduler/docker/Dockerfile
+                ports:
+                        - 9001:8001
+                depends_on:
+                        - postgres_scheduler
+                restart: always
+
+        postgres_kommersant:
+                image: postgres
+                environment:
+                        POSTGRES_USER: postgres
+                        POSTGRES_PASSWORD: password
+                        POSTGRES_DB: db_previous_kommersant
+                ports:
+                        - 15432:5432
+                volumes:
+                        - ./all_volumes/1_postgres-db_previous_kommersant:/var/lib/postgresql/data
+                depends_on:
+                        - scheduler
+                restart: always
+
+        postgres_scheduler:
+                image: postgres
+                environment:
+                        POSTGRES_USER: postgres
+                        POSTGRES_PASSWORD: password
+                        POSTGRES_DB: db_scheduler
+                ports:
+                        - 25432:5432
+                volumes:
+                        - ./all_volumes/0_postgres-db_scheduler:/var/lib/postgresql/data
+                restart: always
+
+volumes:
+        all_volumes:
+#        all_volumes/1_postgres-db_previous_kommersant:
+#        all_volumes/1_kommersant_files:
+#        all_volumes/0_postgres-db_scheduler:
