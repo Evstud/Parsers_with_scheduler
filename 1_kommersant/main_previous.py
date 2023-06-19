@@ -126,21 +126,27 @@ async def get_links(html_file, file_date):
 
 
 async def get_page_data(file_date, source, date, tags, url_part):
-    async with aiohttp.ClientSession() as session:
-        counter = 0
-        while True:
-            async with session.get(source) as response:
-                if response.status == 200:
-                    text_html = await response.text()
-                    break
-                else:
-                    delay = random.randint(1, 5)
-                    await asyncio.sleep(delay)
-                    counter += 1
-                    if counter == 7:
-                        delay2 = random.randint(7, 20)
-                        await asyncio.sleep(delay2)
-                        counter = 0
+    counter = 0
+    while True:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(source, headers=headers) as response:
+                    if response.status == 200:
+                        text_html = await response.text()
+                        break
+                    else:
+                        delay = random.randint(1, 5)
+                        await asyncio.sleep(delay)
+                        counter += 1
+                        if counter % 5 == 0:
+                            delay2 = random.randint(7, 20)
+                            await asyncio.sleep(delay2)
+                        if counter % 11 == 0:
+                            delay3 = random.randint(10, 40)
+                            await asyncio.sleep(delay3)
+
+        except:
+            await asyncio.sleep(60)
 
     soup = BeautifulSoup(text_html, "lxml")
 
@@ -213,6 +219,7 @@ async def get_page_data(file_date, source, date, tags, url_part):
                     #     f.write(base64.b64decode(result))
 
                     tag["src"] = f"data:image/jpg;base64,{result}"
+
     new_soup = re.sub(r'(\n)', r'<br>', str(new_soup), flags=re.DOTALL)
     description = str(new_soup)
     image = image
@@ -243,15 +250,31 @@ async def make_final_json(file_date):
     final_list = []
     counter = 0
     for dat in data:
-        final_dict = await get_page_data(
-            file_date=file_date,
-            source=dat.get('link'),
-            date=dat.get('date'),
-            tags=dat.get('tags'),
-            url_part=dat.get('url_part'))
-        final_list.append(final_dict)
-        counter += 1
-        logger.info(f'{counter}')
+        if counter % 500 == 0:
+            await asyncio.sleep(random.randint(60, 120))
+        try:
+            final_dict = await get_page_data(
+                file_date=file_date,
+                source=dat.get('link'),
+                date=dat.get('date'),
+                tags=dat.get('tags'),
+                url_part=dat.get('url_part'))
+            final_list.append(final_dict)
+            counter += 1
+            logger.info(f'{counter}')
+        except:
+            try:
+                final_dict = await get_page_data(
+                    file_date=file_date,
+                    source=dat.get('link'),
+                    date=dat.get('date'),
+                    tags=dat.get('tags'),
+                    url_part=dat.get('url_part'))
+                final_list.append(final_dict)
+                counter += 1
+                logger.info(f'{counter}')
+            except:
+                pass
 
     if not os.path.exists("final_jsons"):
         os.mkdir("final_jsons")
