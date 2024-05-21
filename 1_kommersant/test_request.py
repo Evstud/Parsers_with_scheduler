@@ -39,12 +39,5 @@ test_article_WITH_image = {
         "url": "/doc/5844573"}
 
 
-
-
-
-
-
-
-
 if __name__ == "__main__":
     asyncio.run(send_test_get())
