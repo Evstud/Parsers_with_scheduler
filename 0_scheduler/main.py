@@ -44,9 +44,6 @@ class BaseAction(Base):
         return value
 
 
-
-
-
 @app.on_event("startup")
 async def startup_event():
     scheduler.start()
